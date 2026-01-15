@@ -771,6 +771,7 @@ class BitmapData implements IBitmapDrawable
 		#end
 
 		image = null;
+		__surface = null;
 
 		width = 0;
 		height = 0;
@@ -779,13 +780,35 @@ class BitmapData implements IBitmapDrawable
 		__isValid = false;
 		readable = false;
 
-		__surface = null;
-
 		__vertexBuffer = null;
-		__framebuffer = null;
-		__framebufferContext = null;
+		__indexBuffer = null;
+		
+		if (__framebuffer != null) {
+			if (__framebufferContext != null) {
+				var gl:Dynamic = __framebufferContext.gl;
+				if (gl != null) {
+					gl.deleteFramebuffer(__framebuffer);
+				}
+			}
+			__framebuffer = null;
+			__framebufferContext = null;
+		}
+		
+		if (__stencilBuffer != null) {
+			if (__framebufferContext != null) {
+				var gl:Dynamic = __framebufferContext.gl;
+				if (gl != null) {
+					gl.deleteRenderbuffer(__stencilBuffer);
+				}
+			}
+			__stencilBuffer = null;
+		}
+		
 		__texture = null;
 		__textureContext = null;
+		
+		__vertexBufferData = null;
+		__indexBufferData = null;
 
 		// if (__texture != null) {
 		//
@@ -2246,7 +2269,7 @@ class BitmapData implements IBitmapDrawable
 		@param	context	A Context3D instance
 		@returns	A Texture or RectangleTexture instance
 	**/
-	@:dox(hide) public function getTexture(context:Context3D):TextureBase
+	@:dox(hide) public function getTexture(context:Context3D, autoDisposeImage:Bool = false):TextureBase
 	{
 		if (!__isValid) return null;
 
@@ -2277,17 +2300,6 @@ class BitmapData implements IBitmapDrawable
 
 			var textureImage = image;
 
-			#if (js && html5)
-			if (#if openfl_power_of_two true || #end (!TextureBase.__supportsBGRA && textureImage.format != RGBA32))
-			{
-				textureImage = textureImage.clone();
-				textureImage.format = RGBA32;
-				// textureImage.buffer.premultiplied = true;
-				#if openfl_power_of_two
-				textureImage.powerOfTwo = true;
-				#end
-			}
-			#else
 			if (#if openfl_power_of_two !textureImage.powerOfTwo || #end (!textureImage.premultiplied && textureImage.transparent))
 			{
 				textureImage = textureImage.clone();
@@ -2296,20 +2308,56 @@ class BitmapData implements IBitmapDrawable
 				textureImage.powerOfTwo = true;
 				#end
 			}
-			#end
 
 			__texture.__uploadFromImage(textureImage);
-
 			__textureVersion = image.version;
 
 			__textureWidth = textureImage.buffer.width;
 			__textureHeight = textureImage.buffer.height;
+
+			if (autoDisposeImage && image != textureImage) {
+				if (image.buffer != null) {
+					#if sys
+					image.buffer.data = null;
+					#end
+
+					#if (js && html5)
+					if (image.buffer.__srcCanvas != null) {
+						image.buffer.__srcCanvas.width = 1;
+						image.buffer.__srcCanvas.height = 1;
+
+						if (image.buffer.__srcContext != null) {
+							image.buffer.__srcContext.clearRect(0, 0, 1, 1);
+						}
+
+						image.buffer.__srcCanvas = null;
+						image.buffer.__srcContext = null;
+					}
+					#end
+
+					if (image.buffer.__srcImageData != null) {
+						image.buffer.__srcImageData = null;
+					}
+				}
+				
+				image.width = 1;
+				image.height = 1;
+				image.dirty = false;
+			}
+			
+			if (__surface != null) {
+				#if lime_cairo
+				__surface.flush();
+				#end
+				__surface = null;
+			}
 		}
 
-		if (!readable && image != null)
-		{
-			__surface = null;
-			image = null;
+		if (image != null && !readable) {
+			if (__textureVersion == image.version) {
+				__surface = null;
+				image = null;
+			}
 		}
 		#end
 
@@ -3313,8 +3361,17 @@ class BitmapData implements IBitmapDrawable
 			image.premultiplied = true;
 			#end
 
-			readable = true;
 			__isValid = true;
+			readable = true;
+
+			if (Lib.current != null && Lib.current.stage != null && Lib.current.stage.context3D != null) {
+				getTexture(Lib.current.stage.context3D);
+				getSurface();
+				
+				if (!readable) {
+					this.image = null;
+				}
+			}
 		}
 		#end
 	}
