@@ -73,6 +73,9 @@ class OpenGLRenderer extends DisplayObjectRenderer
 	@:noCompletion private static var __staticDefaultDisplayShader:DisplayObjectShader;
 	@:noCompletion private static var __staticDefaultGraphicsShader:GraphicsShader;
 	@:noCompletion private static var __staticMaskShader:Context3DMaskShader;
+	@:noCompletion private static var __complexBlendsSupported:Null<Bool>;
+	@:noCompletion private static var __coherentBlendsSupported:Null<Bool>;
+	@:noCompletion private static var __sRGBWriteControlSupported:Null<Bool>;
 
 	@:noCompletion private var __context3D:Context3D;
 	@:noCompletion private var __clipRects:Array<Rectangle>;
@@ -137,6 +140,38 @@ class OpenGLRenderer extends DisplayObjectRenderer
 		{
 			gl.enable(ext.DEBUG_OUTPUT);
 			gl.enable(ext.DEBUG_OUTPUT_SYNCHRONOUS);
+		}
+		#end
+
+		if (__complexBlendsSupported == null)
+		{
+			#if desktop
+			var extensions = gl.getSupportedExtensions();
+			__complexBlendsSupported = extensions.contains("KHR_blend_equation_advanced");
+			__coherentBlendsSupported = extensions.contains("KHR_blend_equation_advanced_coherent");
+
+			// Uncomment these lines to disable coherent blending for testing (it's enabled by default if supported)
+			// __coherentBlendsSupported = false;
+			// gl.disable(0x9285);
+			#else
+			// TODO: actually make this work on android
+			__complexBlendsSupported = false;
+			__coherentBlendsSupported = false;
+			#end
+		}
+
+		#if lime
+		if (__context.type == OPENGLES)
+		{
+			if (__sRGBWriteControlSupported == null)
+			{
+				__sRGBWriteControlSupported = gl.getSupportedExtensions().contains("EXT_sRGB_write_control");
+			}
+
+			if (__sRGBWriteControlSupported)
+			{
+				gl.disable(0x8DB9); // GL_FRAMEBUFFER_SRGB_EXT
+			}
 		}
 		#end
 
@@ -1038,9 +1073,46 @@ class OpenGLRenderer extends DisplayObjectRenderer
 	@:noCompletion private override function __setBlendMode(value:BlendMode):Void
 	{
 		if (__overrideBlendMode != null) value = __overrideBlendMode;
-		if (__blendMode == value) return;
+		if (__blendMode == value && !__complexBlendsSupported) return;
 
 		__blendMode = value;
+
+		if (__complexBlendsSupported)
+		{
+			if (!__coherentBlendsSupported)
+			{
+				// On AMD cards going back to the standard blend equations after using advanced blends resulted in
+				// invisible/black sprites so we need to reset the blend state as a workaround
+				@:privateAccess
+				var cacheBlendState = __context3D.__contextState.__enableGLBlend;
+				__context3D.__setGLBlend(false);
+				__context3D.__setGLBlend(cacheBlendState);
+			}
+
+			var equation:Null<Int> = switch (value)
+			{
+				case OVERLAY: 0x9296; // OVERLAY_KHR
+				case DARKEN: 0x9297; // DARKEN_KHR
+				case HARDLIGHT: 0x929B; // HARDLIGHT_KHR
+				case DIFFERENCE: 0x929E; // DIFFERENCE_KHR
+				case COLORDODGE: 0x9299; // COLORDODGE_KHR
+				case COLORBURN: 0x929A; // COLORBURN_KHR
+				case SOFTLIGHT: 0x929C; // SOFTLIGHT_KHR
+				case EXCLUSION: 0x92A0; // EXCLUSION_KHR
+				case HUE: 0x92AD; // HSL_HUE_KHR
+				case SATURATION: 0x92AE; // HSL_SATURATION_KHR
+				case COLOR: 0x92AF; // HSL_COLOR_KHR
+				case LUMINOSITY: 0x92B0; // HSL_LUMINOSITY_KHR
+				default: null;
+			}
+
+			if (equation != null)
+			{
+				__context3D.__setGLBlendEquation(equation);
+				__context3D.__usingComplexBlend = true;
+				return;
+			}
+		}
 
 		switch (value)
 		{
