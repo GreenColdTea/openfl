@@ -954,6 +954,11 @@ class BitmapData implements IBitmapDrawable
 			transform.concat(matrix);
 		}
 
+		if (sourceAsDisplayObject != null && sourceAsDisplayObject.__scrollRect != null)
+		{
+			transform.translate(-sourceAsDisplayObject.__scrollRect.x, -sourceAsDisplayObject.__scrollRect.y);
+		}
+
 		var clipMatrix:Matrix = null;
 
 		if (clipRect != null)
