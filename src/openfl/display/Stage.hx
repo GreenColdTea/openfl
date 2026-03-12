@@ -1001,7 +1001,7 @@ class Stage extends DisplayObjectContainer #if lime implements IModule #end
 	@:noCompletion private var __fullscreen:Bool;
 	@:noCompletion private var __fullScreenSourceRect:Rectangle;
 	@:noCompletion private var __invalidated:Bool;
-	@:noCompletion private var __lastClickTime:Int;
+	@:noCompletion private var __lastClickTime:Float;
 	@:noCompletion private var __lastClickTarget:InteractiveObject;
 	@:noCompletion private var __logicalWidth:Int;
 	@:noCompletion private var __logicalHeight:Int;
@@ -1105,7 +1105,7 @@ class Stage extends DisplayObjectContainer #if lime implements IModule #end
 		__mouseY = 0;
 		__untransformedMouseX = 0;
 		__untransformedMouseY = 0;
-		__lastClickTime = 0;
+		__lastClickTime = 0.0;
 		__logicalWidth = 0;
 		__logicalHeight = 0;
 		__displayMatrix = new Matrix();
@@ -2014,7 +2014,6 @@ class Stage extends DisplayObjectContainer #if lime implements IModule #end
 		window.onActivate.add(__onLimeWindowActivate.bind(window));
 		window.onClose.add(__onLimeWindowClose.bind(window), false, -9000);
 		window.onDeactivate.add(__onLimeWindowDeactivate.bind(window));
-		window.onDropFile.add(__onLimeWindowDropFile.bind(window));
 		window.onEnter.add(__onLimeWindowEnter.bind(window));
 		window.onExpose.add(__onLimeWindowExpose.bind(window));
 		window.onFocusIn.add(__onLimeWindowFocusIn.bind(window));
@@ -2625,8 +2624,6 @@ class Stage extends DisplayObjectContainer #if lime implements IModule #end
 		// __broadcastEvent (new Event (Event.DEACTIVATE));
 	}
 
-	@:noCompletion private function __onLimeWindowDropFile(window:Window, file:String):Void {}
-
 	@:noCompletion private function __onLimeWindowEnter(window:Window):Void
 	{
 		// if (this.window == null || this.window != window) return;
@@ -2859,7 +2856,7 @@ class Stage extends DisplayObjectContainer #if lime implements IModule #end
 						// the target has changed since the previous click
 						// so we can't double-click the old target anymore
 						__lastClickTarget = null;
-						__lastClickTime = 0;
+						__lastClickTime = 0.0;
 					}
 					MouseEvent.__buttonDown = true;
 					supportsClickCount = true;
@@ -3032,7 +3029,7 @@ class Stage extends DisplayObjectContainer #if lime implements IModule #end
 						MouseEvent.__pool.release(event);
 						#end
 
-						__lastClickTime = 0;
+						__lastClickTime = 0.0;
 						__lastClickTarget = null;
 					}
 					else
@@ -3048,7 +3045,7 @@ class Stage extends DisplayObjectContainer #if lime implements IModule #end
 					// if the current target can't be double-clicked, clear the
 					// old value so that it doesn't become a memory leak
 					__lastClickTarget = null;
-					__lastClickTime = 0;
+					__lastClickTime = 0.0;
 				}
 			}
 		}

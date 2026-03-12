@@ -54,6 +54,11 @@ import lime.math.Matrix4;
 @:allow(openfl.text)
 class OpenGLRenderer extends DisplayObjectRenderer
 {
+	@:noCompletion private static var __blendMinMaxSupported:Null<Bool>;
+	@:noCompletion private static var __complexBlendsSupported:Null<Bool>;
+	@:noCompletion private static var __coherentBlendsSupported:Null<Bool>;
+	@:noCompletion private static var __sRGBWriteControlSupported:Null<Bool>;
+
 	@:noCompletion private static var __alphaValue:Array<Float> = [1];
 	@:noCompletion private static var __colorMultipliersValue:Array<Float> = [0, 0, 0, 0];
 	@:noCompletion private static var __colorOffsetsValue:Array<Float> = [0, 0, 0, 0];
@@ -73,9 +78,6 @@ class OpenGLRenderer extends DisplayObjectRenderer
 	@:noCompletion private static var __staticDefaultDisplayShader:DisplayObjectShader;
 	@:noCompletion private static var __staticDefaultGraphicsShader:GraphicsShader;
 	@:noCompletion private static var __staticMaskShader:Context3DMaskShader;
-	@:noCompletion private static var __complexBlendsSupported:Null<Bool>;
-	@:noCompletion private static var __coherentBlendsSupported:Null<Bool>;
-	@:noCompletion private static var __sRGBWriteControlSupported:Null<Bool>;
 
 	@:noCompletion private var __context3D:Context3D;
 	@:noCompletion private var __clipRects:Array<Rectangle>;
@@ -143,29 +145,13 @@ class OpenGLRenderer extends DisplayObjectRenderer
 		}
 		#end
 
-		if (__complexBlendsSupported == null)
-		{
-			#if desktop
-			var extensions = gl.getSupportedExtensions();
-			__complexBlendsSupported = extensions.contains("KHR_blend_equation_advanced");
-			__coherentBlendsSupported = extensions.contains("KHR_blend_equation_advanced_coherent");
+		final exts = __gl.getSupportedExtensions();
 
-			// Uncomment these lines to disable coherent blending for testing (it's enabled by default if supported)
-			// __coherentBlendsSupported = false;
-			// gl.disable(0x9285);
-			#else
-			// TODO: actually make this work on android
-			__complexBlendsSupported = false;
-			__coherentBlendsSupported = false;
-			#end
-		}
-
-		#if lime
 		if (__context.type == OPENGLES)
 		{
 			if (__sRGBWriteControlSupported == null)
 			{
-				__sRGBWriteControlSupported = gl.getSupportedExtensions().contains("EXT_sRGB_write_control");
+				__sRGBWriteControlSupported = exts.contains("EXT_sRGB_write_control");
 			}
 
 			if (__sRGBWriteControlSupported)
@@ -173,7 +159,19 @@ class OpenGLRenderer extends DisplayObjectRenderer
 				gl.disable(0x8DB9); // GL_FRAMEBUFFER_SRGB_EXT
 			}
 		}
-		#end
+
+		if (__blendMinMaxSupported == null)
+		{
+			__blendMinMaxSupported = exts.contains("EXT_blend_minmax");
+		}
+		if (__complexBlendsSupported == null)
+		{
+			__complexBlendsSupported = exts.contains("KHR_blend_equation_advanced");
+		}
+		if (__coherentBlendsSupported == null)
+		{
+			__coherentBlendsSupported = exts.contains("KHR_blend_equation_advanced_coherent");
+		}
 
 		#if (js && html5)
 		__softwareRenderer = new CanvasRenderer(null);
@@ -1113,31 +1111,36 @@ class OpenGLRenderer extends DisplayObjectRenderer
 
 		switch (value)
 		{
-			case ADD:
-				__context3D.setBlendFactors(ONE, ONE);
-
-			case MULTIPLY:
-				__context3D.setBlendFactors(DESTINATION_COLOR, ONE_MINUS_SOURCE_ALPHA);
-
-			case SCREEN:
-				__context3D.setBlendFactors(ONE, ONE_MINUS_SOURCE_COLOR);
-
+			case ADD: __context3D.setBlendFactors(ONE, ONE);
+			case ALPHA: __context3D.setBlendFactors(SOURCE_ALPHA, ONE_MINUS_SOURCE_ALPHA);
+			case DARKEN:
+				if (__blendMinMaxSupported)
+				{
+					__context3D.setBlendFactors(ONE, ONE_MINUS_SOURCE_ALPHA);
+					__context3D.__setGLBlendEquation(0x8007); // GL_MIN
+				}
+				else
+				{
+					__context3D.setBlendFactors(DESTINATION_COLOR, ONE_MINUS_SOURCE_ALPHA);
+				}
+			case ERASE: __context3D.setBlendFactors(ZERO, ONE_MINUS_SOURCE_ALPHA);
+			case INVERT: __context3D.setBlendFactorsSeparate(ONE_MINUS_DESTINATION_COLOR, ONE_MINUS_SOURCE_ALPHA, ZERO, ONE);
+			case LIGHTEN:
+				if (__blendMinMaxSupported)
+				{
+					__context3D.setBlendFactors(ONE, ONE);
+					__context3D.__setGLBlendEquation(0x8008); // GL_MAX
+				}
+				else
+				{
+					__context3D.setBlendFactors(ONE, ONE);
+				}
+			case MULTIPLY: __context3D.setBlendFactors(DESTINATION_COLOR, ONE_MINUS_SOURCE_ALPHA);
+			case SCREEN: __context3D.setBlendFactors(ONE, ONE_MINUS_SOURCE_COLOR);
 			case SUBTRACT:
 				__context3D.setBlendFactors(ONE, ONE);
-				__context3D.__setGLBlendEquation(__gl.FUNC_REVERSE_SUBTRACT);
-
-			#if desktop
-			case DARKEN:
-				__context3D.setBlendFactors(ONE, ONE);
-				__context3D.__setGLBlendEquation(0x8007); // GL_MIN
-
-			case LIGHTEN:
-				__context3D.setBlendFactors(ONE, ONE);
-				__context3D.__setGLBlendEquation(0x8008); // GL_MAX
-			#end
-
-			default:
-				__context3D.setBlendFactors(ONE, ONE_MINUS_SOURCE_ALPHA);
+				__context3D.__setGLBlendEquation(0x800B); // GL_FUNC_REVERSE_SUBTRACT
+			default: __context3D.setBlendFactors(ONE, ONE_MINUS_SOURCE_ALPHA);
 		}
 	}
 

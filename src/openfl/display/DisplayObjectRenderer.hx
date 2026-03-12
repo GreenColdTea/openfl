@@ -260,10 +260,12 @@ class DisplayObjectRenderer extends EventDispatcher
 			var needRender = (displayObject.__cacheBitmap == null
 				|| (displayObject.__renderDirty && (force || (displayObject.__children != null && displayObject.__children.length > 0)))
 				|| displayObject.opaqueBackground != displayObject.__cacheBitmapBackground);
-			var softwareDirty = needRender
+			var softwareDirty = needRender 
 				|| (displayObject.__graphics != null && displayObject.__graphics.__softwareDirty)
-				|| !displayObject.__cacheBitmapColorTransform.__equals(colorTransform, true);
-			var hardwareDirty = needRender || (displayObject.__graphics != null && displayObject.__graphics.__hardwareDirty);
+				|| (displayObject.__cacheBitmapColorTransform != null && colorTransform != null 
+					&& !displayObject.__cacheBitmapColorTransform.__equals(colorTransform, true));
+			var hardwareDirty = needRender 
+				|| (displayObject.__graphics != null && displayObject.__graphics.__hardwareDirty);
 
 			var renderType = renderer.__type;
 
