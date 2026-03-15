@@ -359,8 +359,7 @@ class BitmapData implements IBitmapDrawable
 	{
 		if (!readable || sourceBitmapData == null || !sourceBitmapData.readable) return;
 
-		// TODO: Ways to optimize this?
-
+		var expandedRect = filter.__getExpandedRect(sourceRect);
 		var needSecondBitmapData = filter.__needSecondBitmapData;
 		var needCopyOfOriginal = filter.__preserveObject;
 
@@ -378,25 +377,19 @@ class BitmapData implements IBitmapDrawable
 
 		if (needCopyOfOriginal)
 		{
-			bitmapData3 = new BitmapData(width, height, true, 0);
+			bitmapData3 = new BitmapData(Std.int(expandedRect.width), Std.int(expandedRect.height), true, 0);
+			bitmapData3.copyPixels(this, expandedRect, new Point(0, 0));
 		}
 
-		if (filter.__preserveObject)
+		var lastBitmap = filter.__applyFilter(bitmapData2, sourceBitmapData, sourceRect, destPoint);
+		if (needCopyOfOriginal)
 		{
-			bitmapData3.copyPixels(this, rect, destPoint);
+			lastBitmap.copyPixels(bitmapData3, bitmapData3.rect, new Point(expandedRect.x, expandedRect.y), null, null, true);
 		}
 
-		var lastBitmap = filter.__applyFilter(bitmapData2, this, sourceRect, destPoint);
-
-		if (filter.__preserveObject)
+		if (needSecondBitmapData)
 		{
-			lastBitmap.draw(bitmapData3, null, null);
-		}
-
-		if (needSecondBitmapData && lastBitmap == bitmapData2)
-		{
-			bitmapData2.image.version = image.version;
-			image = bitmapData2.image;
+			this.copyPixels(lastBitmap, expandedRect, new Point(expandedRect.x, expandedRect.y));
 		}
 
 		image.dirty = true;

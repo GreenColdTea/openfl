@@ -69,6 +69,16 @@ class BitmapFilter
 		// return renderer.__defaultShader;
 		return null;
 	}
+
+	@:noCompletion private function __getExpandedRect(sourceRect:Rectangle):Rectangle
+	{
+		var rect = sourceRect.clone();
+		rect.x -= __leftExtension;
+		rect.y -= __topExtension;
+		rect.width += __leftExtension + __rightExtension;
+		rect.height += __topExtension + __bottomExtension;
+		return rect;
+	}
 }
 #else
 typedef BitmapFilter = flash.filters.BitmapFilter;
