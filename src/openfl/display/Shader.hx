@@ -771,29 +771,32 @@ class Shader
 				return;
 			}
 
+			var vertexSource = glVertexSource;
+			var fragmentSource = glFragmentSource;
+
 			var vertexPrefix = __buildSourcePrefix(false);
 			var fragmentPrefix = __buildSourcePrefix(true);
-
-			var vertex = vertexPrefix + glVertexSource;
-			var fragment = fragmentPrefix + glFragmentSource;
 
 			var usesGLSL300 = vertexPrefix.indexOf("#version 300 es") != -1
 				|| fragmentPrefix.indexOf("#version 300 es") != -1;
 
 			if (usesGLSL300)
 			{
-				vertex = vertex.replace("attribute", "in")
+				vertexSource = vertexSource.replace("attribute", "in")
 					.replace("varying", "out");
 
-				fragment = fragment.replace("varying", "in")
+				fragmentSource = fragmentSource.replace("varying", "in")
 					.replace("texture2D", "texture");
 
-				if (fragment.indexOf("gl_FragColor") != -1)
+				if (fragmentSource.indexOf("gl_FragColor") != -1)
 				{
-					fragment = "out vec4 output_FragColor;\n" + fragment;
-					fragment = fragment.replace("gl_FragColor", "output_FragColor");
+					fragmentSource = "out vec4 output_FragColor;\n" + fragmentSource;
+					fragmentSource = fragmentSource.replace("gl_FragColor", "output_FragColor");
 				}
 			}
+
+			var vertex = vertexPrefix + vertexSource;
+			var fragment = fragmentPrefix + fragmentSource;
 
 			var id = vertex + fragment;
 
