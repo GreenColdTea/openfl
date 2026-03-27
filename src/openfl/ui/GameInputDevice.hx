@@ -117,6 +117,28 @@ import lime.ui.Gamepad;
 	public function startCachingSamples(numSamples:Int, controls:Vector<String>):Void {}
 
 	/**
+		Start a rumble effect.
+	**/
+	public function rumble(lowFrequency:Float, highFrequency:Float, duration:Int):Void
+	{
+		if (__gamepad != null)
+		{
+			__gamepad.rumble(lowFrequency, highFrequency, duration);
+		}
+	}
+
+	/**
+		Update the LED color.
+	**/
+	public function setLED(red:Int, green:Int, blue:Int):Void
+	{
+		if (__gamepad != null)
+		{
+			__gamepad.setLED(red, green, blue);
+		}
+	}
+
+	/**
 		Stops sample caching.
 	**/
 	public function stopCachingSamples():Void {}
