@@ -610,7 +610,7 @@ class File extends FileReference
 	public function browseForOpen(title:String, typeFilter:Array<FileFilter> = null)
 	{
 		#if (lime && !macro)
-		FileDialog.openFile(Lib.current.stage.window, title, function(filepaths:Array<String>):Void
+		FileDialog.openFile(Lib.current.stage.window, title, function(filepaths:Array<String>, filter):Void
 		{
 			if (filepaths.length > 0)
 			{
@@ -674,7 +674,7 @@ class File extends FileReference
 	public function browseForOpenMultiple(title:String, typeFilter:Array<FileFilter> = null):Void
 	{
 		#if (lime && !macro)
-		FileDialog.openFile(Lib.current.stage.window, title, function(filepaths:Array<String>):Void
+		FileDialog.openFile(Lib.current.stage.window, title, function(filepaths:Array<String>, filter):Void
 		{
 			if (filepaths.length > 0)
 			{
