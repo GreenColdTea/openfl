@@ -58,6 +58,7 @@ class OpenGLRenderer extends DisplayObjectRenderer
 	@:noCompletion private static var __complexBlendsSupported:Null<Bool>;
 	@:noCompletion private static var __coherentBlendsSupported:Null<Bool>;
 	@:noCompletion private static var __sRGBWriteControlSupported:Null<Bool>;
+	@:noCompletion private static var __standardDerivativesSupported:Null<Bool>;
 
 	@:noCompletion private static var __alphaValue:Array<Float> = [1];
 	@:noCompletion private static var __colorMultipliersValue:Array<Float> = [0, 0, 0, 0];
@@ -171,6 +172,10 @@ class OpenGLRenderer extends DisplayObjectRenderer
 		if (__coherentBlendsSupported == null)
 		{
 			__coherentBlendsSupported = exts.contains("KHR_blend_equation_advanced_coherent");
+		}
+		if (__standardDerivativesSupported == null)
+		{
+			__standardDerivativesSupported = exts.contains("OES_standard_derivatives");
 		}
 
 		#if (js && html5)

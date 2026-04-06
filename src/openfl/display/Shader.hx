@@ -607,10 +607,12 @@ class Shader
 		}
 		
 		var complexBlendsSupported = false;
+		var standardDerivativesSupported = false;
 		#if (lime || openfl)
 		if (__context != null && OpenGLRenderer.__complexBlendsSupported != null)
 		{
 			complexBlendsSupported = OpenGLRenderer.__complexBlendsSupported && isFragment;
+			standardDerivativesSupported = OpenGLRenderer.__standardDerivativesSupported && isFragment;
 			
 			// Additional checks based on context type and version
 			if (complexBlendsSupported)
@@ -651,6 +653,11 @@ class Shader
 				extensions += "#extension GL_ARB_sample_shading : enable\n";
 			}
 			#end
+		}
+
+		if (standardDerivativesSupported)
+		{
+			extensions += "#extension GL_OES_standard_derivatives : enable\n";
 		}
 		
 		var precisionPart = "";
