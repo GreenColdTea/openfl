@@ -14,6 +14,8 @@ import openfl.display3D.Program3D;
 import openfl.display.OpenGLRenderer;
 import openfl.utils.ByteArray;
 
+using StringTools;
+
 /**
 	// TODO: Document GLSL Shaders
 	A Shader instance represents a Pixel Bender shader kernel in ActionScript.
@@ -381,7 +383,7 @@ class Shader
 
 	/**
 	 * Searches for strings that have only whitespace.
-	 * 
+	 *
 	 * **Note:** Searching for all whitespace via `~/^\s*$/` caused false-negatives,
 	 * notably: `String.fromCharCode(0)` is `false` but `\W` is `true`.
 	 */
@@ -425,7 +427,7 @@ class Shader
 		// If we couldn't parse the logs, output the old, verbose format
 		if (failingLine != null)
 			message = '\nFailed to simplify log:"$failingLine"\n$infoLog\n$source';
-		
+
 		var typeName = (type == __context.gl.VERTEX_SHADER) ? "Vertex" : "Fragment";
 		if (isError) Log.error('Error compiling $typeName shader $message');
 		else Log.debug('Info compiling $typeName shader $message');
@@ -560,7 +562,7 @@ class Shader
 	@:noCompletion private function __buildSourcePrefix(isFragment:Bool):String
 	{
 		var extensions = "";
-		
+
 		var extList = (isFragment ? __glFragmentExtensions : __glVertexExtensions);
 		if (extList != null)
 		{
@@ -569,7 +571,7 @@ class Shader
 				extensions += "#extension " + ext.name + " : " + ext.behavior + "\n";
 			}
 		}
-		
+
 		var versionLine = "";
 		if (__glVersion != null && __glVersion != "")
 		{
@@ -605,7 +607,7 @@ class Shader
 			versionLine = "#version 120\n";
 			#end
 		}
-		
+
 		var complexBlendsSupported = false;
 		var standardDerivativesSupported = false;
 		#if (lime || openfl)
@@ -613,18 +615,18 @@ class Shader
 		{
 			complexBlendsSupported = OpenGLRenderer.__complexBlendsSupported && isFragment;
 			standardDerivativesSupported = OpenGLRenderer.__standardDerivativesSupported && isFragment;
-			
+
 			// Additional checks based on context type and version
 			if (complexBlendsSupported)
 			{
 				#if lime
 				var versionStr = __context.__context.version;
-				
+
 				if (__context.__context.type == OPENGL)
 				{
 					var major = __parseGLVersionMajor(versionStr);
 					var minor = __parseGLVersionMinor(versionStr);
-					
+
 					var versionOK = (major > 4) || (major == 4) || (major == 3 && minor >= 2);
 					var hasExtension = __context.gl.getExtension("GL_KHR_blend_equation_advanced") != null;
 					complexBlendsSupported = versionOK || hasExtension;
@@ -642,11 +644,11 @@ class Shader
 			}
 		}
 		#end
-		
+
 		if (complexBlendsSupported)
 		{
 			extensions += "#extension GL_KHR_blend_equation_advanced : enable\n";
-			
+
 			#if lime
 			if (__context != null && __context.__context.type == OPENGL)
 			{
@@ -659,7 +661,7 @@ class Shader
 		{
 			extensions += "#extension GL_OES_standard_derivatives : enable\n";
 		}
-		
+
 		var precisionPart = "";
 		if (versionLine.indexOf("es") > -1 || versionLine == "" || versionLine == "#version 100\n")
 		{
@@ -669,16 +671,16 @@ class Shader
 						+ "precision mediump float;\n"
 						+ "#endif" : "precision lowp float;");
 		}
-		
+
 		var prefix = versionLine
 			+ extensions
 			+ (precisionPart != "" ? "#ifdef GL_ES\n" + precisionPart + "\n#endif\n" : "");
-		
+
 		if (complexBlendsSupported)
 		{
 			prefix += "#ifdef GL_KHR_blend_equation_advanced\nlayout (blend_support_all_equations) out;\n#endif\n";
 		}
-		
+
 		return prefix;
 	}
 
@@ -688,7 +690,7 @@ class Shader
 	@:noCompletion private function __parseGLVersionMajor(versionStr:String):Int
 	{
 		if (versionStr == null || versionStr == "") return 0;
-		
+
 		var dotIndex = versionStr.indexOf(".");
 		if (dotIndex > 0)
 		{
@@ -704,7 +706,7 @@ class Shader
 	@:noCompletion private function __parseGLVersionMinor(versionStr:String):Int
 	{
 		if (versionStr == null || versionStr == "") return 0;
-		
+
 		var firstDot = versionStr.indexOf(".");
 		if (firstDot > 0)
 		{
@@ -725,10 +727,10 @@ class Shader
 	@:noCompletion private function __getGLSLVersionFromGLVersion(versionStr:String):String
 	{
 		if (versionStr == null || versionStr == "") return null;
-		
+
 		var major = __parseGLVersionMajor(versionStr);
 		var minor = __parseGLVersionMinor(versionStr);
-		
+
 		if (major >= 3)
 		{
 			if (major == 3)
@@ -742,13 +744,13 @@ class Shader
 				return "330";
 			}
 		}
-		
+
 		if (major == 2)
 		{
 			if (minor >= 1) return "120";
 			return "110";
 		}
-		
+
 		return "120";
 	}
 
@@ -772,7 +774,7 @@ class Shader
 		if (__context != null && program == null)
 		{
 			var gl = __context.gl;
-			
+
 			if (gl == null) {
 				Log.error("WebGL context is not available for shader initialization");
 				return;
@@ -817,7 +819,7 @@ class Shader
 
 				if (program != null) {
 					var glProgram = __createGLProgram(vertex, fragment);
-					
+
 					if (glProgram != null) {
 						program.__glProgram = glProgram;
 						__context.__programs.set(id, program);
