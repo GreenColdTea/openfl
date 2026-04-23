@@ -153,11 +153,6 @@ class Shader
 	public var glVersion(get, set):String;
 
 	/**
-		The default GLSL vertex body, before being applied to the vertex source.
-	**/
-	public var glFragmentBodyRaw(get, null):String;
-
-	/**
 		Provides additional `#extension` directives to insert in the vertex shader.
 	**/
 	public var glVertexExtensions(get, set):Array<{name:String, behavior:String}>;
@@ -168,20 +163,10 @@ class Shader
 	public var glFragmentExtensions(get, set):Array<{name:String, behavior:String}>;
 
 	/**
-		The default GLSL vertex header, before being applied to the vertex source.
-	**/
-	public var glFragmentHeaderRaw(get, null):String;
-
-	/**
 		Get or set the fragment source used when compiling with GLSL.
 		This property is not available on the Flash target.
 	**/
 	public var glFragmentSource(get, set):String;
-
-	/**
-		The default GLSL fragment source, before `#pragma` values are replaced.
-	**/
-	public var glFragmentSourceRaw(get, null):String;
 
 	/**
 		The compiled GLProgram if available.
@@ -189,21 +174,6 @@ class Shader
 		This property is not available on the Flash target.
 	**/
 	@SuppressWarnings("checkstyle:Dynamic") public var glProgram(default, null):GLProgram;
-
-	/**
-		The default GLSL vertex header, before being applied to the vertex source.
-	**/
-	public var glVertexHeaderRaw(get, null):String;
-
-	/**
-		The default GLSL vertex body, before being applied to the vertex source.
-	**/
-	public var glVertexBodyRaw(get, null):String;
-
-	/**
-		The default GLSL vertex source, before `#pragma` values are replaced.
-	**/
-	public var glVertexSourceRaw(get, null):String;
 
 	/**
 		Get or set the vertex source used when compiling with GLSL.
@@ -266,14 +236,8 @@ class Shader
 	@:noCompletion private var __colorOffset:ShaderParameter<Float>;
 	@:noCompletion private var __context:Context3D;
 	@:noCompletion private var __data:ShaderData;
-	@:noCompletion private var __glFragmentBodyRaw:String;
-	@:noCompletion private var __glFragmentHeaderRaw:String;
 	@:noCompletion private var __glFragmentSource:String;
-	@:noCompletion private var __glFragmentSourceRaw:String;
 	@:noCompletion private var __glSourceDirty:Bool;
-	@:noCompletion private var __glVertexHeaderRaw:String;
-	@:noCompletion private var __glVertexBodyRaw:String;
-	@:noCompletion private var __glVertexSourceRaw:String;
 	@:noCompletion private var __glVertexSource:String;
 	@:noCompletion private var __hasColorTransform:ShaderParameter<Bool>;
 	@:noCompletion private var __inputBitmapData:Array<ShaderInput<BitmapData>>;
@@ -300,6 +264,10 @@ class Shader
 				get: untyped #if haxe4 js.Syntax.code #else __js__ #end ("function () { return this.get_data (); }"),
 				set: untyped #if haxe4 js.Syntax.code #else __js__ #end ("function (v) { return this.set_data (v); }")
 			},
+			"glVersion": {
+				get: untyped #if haxe4 js.Syntax.code #else __js__ #end ("function () { return this.get_glVersion (); }"),
+				set: untyped #if haxe4 js.Syntax.code #else __js__ #end ("function (v) { return this.set_glVersion (v); }")
+			},
 			"glVertexExtensions": {
 				get: untyped #if haxe4 js.Syntax.code #else __js__ #end ("function () { return this.get_glVertexExtensions (); }"),
 				set: untyped #if haxe4 js.Syntax.code #else __js__ #end ("function (v) { return this.set_glVertexExtensions (v); }")
@@ -308,31 +276,9 @@ class Shader
 				get: untyped #if haxe4 js.Syntax.code #else __js__ #end ("function () { return this.get_glFragmentExtensions (); }"),
 				set: untyped #if haxe4 js.Syntax.code #else __js__ #end ("function (v) { return this.set_glFragmentExtensions (v); }")
 			},
-			"glVersion": {
-				get: untyped #if haxe4 js.Syntax.code #else __js__ #end ("function () { return this.get_glVersion (); }"),
-				set: untyped #if haxe4 js.Syntax.code #else __js__ #end ("function (v) { return this.set_glVersion (v); }")
-			},
-			"glFragmentHeaderRaw": {
-				get: untyped #if haxe4 js.Syntax.code #else __js__ #end ("function () { return this.get_glFragmentHeaderRaw (); }"),
-			},
-			"glFragmentBodyRaw": {
-				get: untyped #if haxe4 js.Syntax.code #else __js__ #end ("function () { return this.get_glFragmentBodyRaw (); }"),
-			},
-			"glFragmentSourceRaw": {
-				get: untyped #if haxe4 js.Syntax.code #else __js__ #end ("function () { return this.get_glFragmentSourceRaw (); }"),
-			},
 			"glFragmentSource": {
 				get: untyped #if haxe4 js.Syntax.code #else __js__ #end ("function () { return this.get_glFragmentSource (); }"),
 				set: untyped #if haxe4 js.Syntax.code #else __js__ #end ("function (v) { return this.set_glFragmentSource (v); }")
-			},
-			"glVertexHeaderRaw": {
-				get: untyped #if haxe4 js.Syntax.code #else __js__ #end ("function () { return this.get_glVertexHeaderRaw (); }"),
-			},
-			"glVertexBodyRaw": {
-				get: untyped #if haxe4 js.Syntax.code #else __js__ #end ("function () { return this.get_glVertexBodyRaw (); }"),
-			},
-			"glVertexSourceRaw": {
-				get: untyped #if haxe4 js.Syntax.code #else __js__ #end ("function () { return this.get_glVertexSourceRaw (); }"),
 			},
 			"glVertexSource": {
 				get: untyped #if haxe4 js.Syntax.code #else __js__ #end ("function () { return this.get_glVertexSource (); }"),
@@ -1308,16 +1254,6 @@ class Shader
 		return __data = cast value;
 	}
 
-	@:noCompletion private function get_glFragmentBodyRaw():String
-	{
-		return __glFragmentBodyRaw;
-	}
-
-	@:noCompletion private function get_glFragmentHeaderRaw():String
-	{
-		return __glFragmentHeaderRaw;
-	}
-
 	@:noCompletion private function get_glFragmentSource():String
 	{
 		return __glFragmentSource;
@@ -1333,11 +1269,6 @@ class Shader
 		return __glFragmentSource = value;
 	}
 
-	@:noCompletion private function get_glFragmentSourceRaw():String
-	{
-		return __glFragmentSourceRaw;
-	}
-
 	@:noCompletion private function get_glVertexSource():String
 	{
 		return __glVertexSource;
@@ -1351,11 +1282,6 @@ class Shader
 		}
 
 		return __glVertexSource = value;
-	}
-
-	@:noCompletion private function get_glVertexSourceRaw():String
-	{
-		return __glVertexSourceRaw;
 	}
 
 	@:noCompletion private function get_glVersion():String
@@ -1398,16 +1324,6 @@ class Shader
 			__glSourceDirty = true;
 		}
 		return __glFragmentExtensions = value;
-	}
-
-	@:noCompletion private function get_glVertexHeaderRaw():String
-	{
-		return __glVertexHeaderRaw;
-	}
-
-	@:noCompletion private function get_glVertexBodyRaw():String
-	{
-		return __glVertexBodyRaw;
 	}
 }
 #else
