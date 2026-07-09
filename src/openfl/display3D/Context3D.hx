@@ -10,6 +10,7 @@ import openfl.display3D.textures.CubeTexture;
 import openfl.display3D.textures.RectangleTexture;
 import openfl.display3D.textures.TextureBase;
 import openfl.display3D.textures.Texture;
+import openfl.display3D.textures.ASTCTexture;
 import openfl.display3D.textures.VideoTexture;
 import openfl.display.BitmapData;
 import openfl.display.Stage;
@@ -130,6 +131,7 @@ import lime.math.Vector2;
 @:noDebug
 #end
 @:access(openfl.display3D._internal.Context3DState)
+@:access(openfl.display3D.textures.ASTCTexture)
 @:access(openfl.display3D.textures.CubeTexture)
 @:access(openfl.display3D.textures.RectangleTexture)
 @:access(openfl.display3D.textures.TextureBase)
@@ -990,6 +992,39 @@ import lime.math.Vector2;
 	public function createVertexBuffer(numVertices:Int, data32PerVertex:Int, bufferUsage:Context3DBufferUsage = STATIC_DRAW):VertexBuffer3D
 	{
 		return new VertexBuffer3D(this, numVertices, data32PerVertex, bufferUsage);
+	}
+
+	/**
+		Checks whether ASTC (Adaptive Scalable Texture Compression) is supported on this Context3D instance.
+
+		@return `true` if ASTC textures can be used on this device, `false` otherwise.
+	**/
+	public function isASTCSupported():Bool
+	{
+		if (ASTCTexture.__astcCompressedTexturesSupported == null)
+		{
+			ASTCTexture.__astcCompressedTexturesSupported = gl.getSupportedExtensions().contains("KHR_texture_compression_astc_ldr");
+		}
+
+		return ASTCTexture.__astcCompressedTexturesSupported == true;
+	}
+
+	/**
+		Creates a new ASTCTexture instance from ASTC-compressed data.
+
+		You must check `isASTCSupported()` before calling this method.
+
+		@param data A ByteArray containing ASTC-compressed texture data.
+		@return An `ASTCTexture` ready for use in rendering.
+
+		@throws IllegalOperationError If ASTC is not supported on this device (missing extension).
+		@throws IllegalOperationError If the ASTC signature in `data` is invalid.
+		@throws IllegalOperationError If the ASTC block format (blockX × blockY) is not supported.
+		@throws IllegalOperationError If the ASTC file is too short for header + blocks.
+	**/
+	public function createASTCTexture(data:ByteArray):ASTCTexture
+	{
+		return new ASTCTexture(this, data);
 	}
 
 	/**
