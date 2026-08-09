@@ -198,16 +198,13 @@ import js.html.CSSStyleDeclaration;
 @:access(openfl.geom.Transform)
 class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (openfl_dynamic && haxe_ver < "4.0.0") implements Dynamic<DisplayObject> #end
 {
-	#if (openfl_enable_experimental_update_queue && !dom)
+	#if openfl_enable_experimental_update_queue
 	@:noCompletion private static var updateQueue:Array<DisplayObject> = [];
 	#end
 
 	@:noCompletion private static var __broadcastEvents:Map<String, Array<DisplayObject>> = new Map();
 	@:noCompletion private static var __initStage:Stage;
 	@:noCompletion private static var __instanceCount:Int = 0;
-
-	@:noCompletion
-	private static #if !js inline #end var __supportDOM:Bool #if !js = false #end;
 
 	@:noCompletion private static var __tempStack:ObjectPool<Vector<DisplayObject>> = new ObjectPool<Vector<DisplayObject>>(function() return
 		new Vector<DisplayObject>(), function(stack) stack.length = 0);
@@ -1177,7 +1174,7 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 					dispatchers.push(this);
 				}
 
-			case RenderEvent.CLEAR_DOM, RenderEvent.RENDER_CAIRO, RenderEvent.RENDER_CANVAS, RenderEvent.RENDER_DOM, RenderEvent.RENDER_OPENGL:
+			case RenderEvent.RENDER_CAIRO, RenderEvent.RENDER_CANVAS, RenderEvent.RENDER_OPENGL:
 				if (__customRenderEvent == null)
 				{
 					__customRenderEvent = new RenderEvent(null);
@@ -1418,11 +1415,9 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 					}
 				}
 
-			case RenderEvent.CLEAR_DOM, RenderEvent.RENDER_CAIRO, RenderEvent.RENDER_CANVAS, RenderEvent.RENDER_DOM, RenderEvent.RENDER_OPENGL:
-				if (!hasEventListener(RenderEvent.CLEAR_DOM)
-					&& !hasEventListener(RenderEvent.RENDER_CAIRO)
+			case RenderEvent.RENDER_CAIRO, RenderEvent.RENDER_CANVAS, RenderEvent.RENDER_OPENGL:
+				if (!hasEventListener(RenderEvent.RENDER_CAIRO)
 					&& !hasEventListener(RenderEvent.RENDER_CANVAS)
-					&& !hasEventListener(RenderEvent.RENDER_DOM)
 					&& !hasEventListener(RenderEvent.RENDER_OPENGL))
 				{
 					__customRenderEvent = null;
@@ -1768,7 +1763,7 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 		}
 	}
 
-	#if (openfl_enable_experimental_update_queue && !dom)
+	#if openfl_enable_experimental_update_queue
 	@:noCompletion private var _updateQueueFlag:Bool = false;
 
 	@:noCompletion inline private function __setUpdateQueueFlag(add:Bool = true):Void
@@ -1796,7 +1791,7 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 			__renderDirty = true;
 			__setParentRenderDirty();
 		}
-		#if (openfl_enable_experimental_update_queue && !dom)
+		#if openfl_enable_experimental_update_queue
 		__setUpdateQueueFlag();
 		#end
 	}
@@ -1815,7 +1810,7 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 			__setWorldTransformInvalid();
 			__setParentRenderDirty();
 		}
-		#if (openfl_enable_experimental_update_queue && !dom)
+		#if openfl_enable_experimental_update_queue
 		__setUpdateQueueFlag();
 		#end
 	}
@@ -1834,7 +1829,7 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 		__renderable = (__visible && __scaleX != 0 && __scaleY != 0 && !__isMask && (renderParent == null || !renderParent.__isMask));
 		__updateTransforms();
 
-		#if (openfl_enable_experimental_update_queue && !dom)
+		#if openfl_enable_experimental_update_queue
 		transformOnly = false;
 		#end
 
@@ -1848,28 +1843,8 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 
 		if (!transformOnly)
 		{
-			if (__supportDOM)
-			{
-				__renderTransformChanged = !__renderTransform.equals(__renderTransformCache);
-
-				if (__renderTransformCache == null)
-				{
-					__renderTransformCache = __renderTransform.clone();
-				}
-				else
-				{
-					__renderTransformCache.copyFrom(__renderTransform);
-				}
-			}
-
 			if (renderParent != null)
 			{
-				if (__supportDOM)
-				{
-					var worldVisible = (renderParent.__worldVisible && __visible);
-					__worldVisibleChanged = (__worldVisible != worldVisible);
-					__worldVisible = worldVisible;
-				}
 				var worldAlpha = alpha * renderParent.__worldAlpha;
 				__worldAlphaChanged = (__worldAlpha != worldAlpha);
 				__worldAlpha = worldAlpha;
@@ -1915,12 +1890,6 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 			else
 			{
 				__worldAlpha = alpha;
-
-				if (__supportDOM)
-				{
-					__worldVisibleChanged = (__worldVisible != __visible);
-					__worldVisible = __visible;
-				}
 				__worldAlphaChanged = (__worldAlpha != alpha);
 
 				if (__objectTransform != null)
@@ -2415,7 +2384,7 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 
 		__setTransformDirty();
 
-		if (__supportDOM || cacheAsBitmap)
+		if (cacheAsBitmap)
 		{
 			__setRenderDirty();
 		}

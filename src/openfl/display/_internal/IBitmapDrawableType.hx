@@ -12,5 +12,4 @@ package openfl.display._internal;
 	public var TEXT_FIELD = 7;
 	public var VIDEO = 8;
 	public var TILEMAP = 9;
-	public var DOM_ELEMENT = 10;
 }

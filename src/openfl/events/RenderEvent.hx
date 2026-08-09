@@ -29,25 +29,6 @@ import openfl.geom.Matrix;
 @:beta class RenderEvent extends Event
 {
 	/**
-		The `RenderEvent.CLEAR_DOM` constant defines the value of the `type` property
-		of an `renderEvent` event object.
-
-		This event has the following properties:
-
-		| Property | Value |
-		| --- | --- |
-		| `bubbles` | `true` |
-		| `cancelable` | `true` |
-		| `currentTarget` | The object that is actively processing the Event object with an event listener. |
-		| `renderer` | A reference to the active display object renderer. |
-		| `target` | The display object that is going to be rendered. |
-	**/
-	public static inline var CLEAR_DOM:EventType<RenderEvent> = "clearDOM";
-
-	/**
-		The `RenderEvent.RENDER_CAIRO` constant defines the value of the `type` property
-		of an `renderEvent` event object.
-
 		This event has the following properties:
 
 		| Property | Value |
@@ -75,22 +56,6 @@ import openfl.geom.Matrix;
 		| `target` | The display object that is going to be rendered. |
 	**/
 	public static inline var RENDER_CANVAS:EventType<RenderEvent> = "renderCanvas";
-
-	/**
-		The `RenderEvent.RENDER_DOM` constant defines the value of the `type` property
-		of an `renderEvent` event object.
-
-		This event has the following properties:
-
-		| Property | Value |
-		| --- | --- |
-		| `bubbles` | `true` |
-		| `cancelable` | `true` |
-		| `currentTarget` | The object that is actively processing the Event object with an event listener. |
-		| `renderer` | A reference to the active display object renderer. |
-		| `target` | The display object that is going to be rendered. |
-	**/
-	public static inline var RENDER_DOM:EventType<RenderEvent> = "renderDOM";
 
 	/**
 		The `RenderEvent.RENDER_OPENGL` constant defines the value of the `type` property
@@ -136,10 +101,8 @@ import openfl.geom.Matrix;
 		Event objects are passed as parameters to event listeners.
 
 		@param type        The type of the event. Possible values
-						   are: `RenderEvent.CLEAR_DOM`,
-						   `RenderEvent.RENDER_CAIRO`,
+						   are: `RenderEvent.RENDER_CAIRO`,
 						   `RenderEvent.RENDER_CANVAS`,
-						   `RenderEvent.RENDER_DOM`, and
 						   `RenderEvent.RENDER_OPENGL`.
 		@param bubbles     Determines whether the Event object participates in the
 						   bubbling stage of the event flow.

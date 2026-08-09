@@ -63,7 +63,7 @@ import openfl.utils.ByteArray;
 			var gl = __context.gl;
 
 			__context.__bindGLTexture2D(__textureID);
-			gl.texImage2D(__textureTarget, 0, __internalFormat, __format, gl.UNSIGNED_BYTE, image.buffer.src);
+			__uploadTexture2D(__textureTarget, __width, __height, __internalFormat, __format, data);
 			__context.__bindGLTexture2D(null);
 			return;
 		}

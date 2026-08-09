@@ -722,11 +722,6 @@ class TextField extends InteractiveObject
 	@:noCompletion private var __htmlText:UTF8String;
 	@:noCompletion private var __textEngine:TextEngine;
 	@:noCompletion private var __textFormat:TextFormat;
-	#if (js && html5)
-	@:noCompletion private var __div:DivElement;
-	@:noCompletion private var __renderedOnCanvasWhileOnDOM:Bool = false;
-	@:noCompletion private var __forceCachedBitmapUpdate:Bool = false;
-	#end
 
 	#if openfljs
 	@:noCompletion private static function __init__()
@@ -2323,12 +2318,7 @@ class TextField extends InteractiveObject
 			__selectionIndex = __caretIndex;
 		}
 
-		var enableInput = #if (js && html5) (DisplayObject.__supportDOM ? __renderedOnCanvasWhileOnDOM : true) #else true #end;
-
-		if (enableInput)
-		{
-			__enableInput();
-		}
+		__enableInput();
 	}
 
 	@:noCompletion private function __stopCursorTimer():Void
@@ -2349,12 +2339,7 @@ class TextField extends InteractiveObject
 
 	@:noCompletion private function __stopTextInput():Void
 	{
-		var disableInput = #if (js && html5) (DisplayObject.__supportDOM ? __renderedOnCanvasWhileOnDOM : true) #else true #end;
-
-		if (disableInput)
-		{
-			__disableInput();
-		}
+		__disableInput();
 	}
 
 	@:noCompletion private function __updateLayout():Void
@@ -2570,13 +2555,6 @@ class TextField extends InteractiveObject
 
 	@:noCompletion private function __updateText(value:String):Void
 	{
-		#if (js && html5)
-		if (DisplayObject.__supportDOM && __renderedOnCanvasWhileOnDOM)
-		{
-			__forceCachedBitmapUpdate = __text != value;
-		}
-		#end
-
 		// applies maxChars and restrict on text
 
 		__textEngine.text = value;
@@ -2610,7 +2588,7 @@ class TextField extends InteractiveObject
 			}
 		}
 
-		if (!__displayAsPassword #if (js && html5) || (DisplayObject.__supportDOM && !__renderedOnCanvasWhileOnDOM) #end)
+		if (!__displayAsPassword)
 		{
 			__textEngine.text = __text;
 		}
@@ -2868,38 +2846,7 @@ class TextField extends InteractiveObject
 
 		value = HTMLParser.parse(value, multiline, __styleSheet, __textFormat, __textEngine.textFormatRanges);
 
-		#if (js && html5)
-		// if (DisplayObject.__supportDOM)
-		// {
-		// 	// TODO: Why is this parsing text format ranges, only to ignore them?
-		// 	// Should this skip the parser entirely?
-		// 	if (__textEngine.textFormatRanges.length > 1)
-		// 	{
-		// 		__textEngine.textFormatRanges.splice(1, __textEngine.textFormatRanges.length - 1);
-		// 	}
-
-		// 	var range = __textEngine.textFormatRanges[0];
-		// 	range.format = __textFormat;
-		// 	range.start = 0;
-
-		// 	if (__renderedOnCanvasWhileOnDOM)
-		// 	{
-		// 		range.end = value.length;
-		// 		__updateText(value);
-		// 	}
-		// 	else
-		// 	{
-		// 		range.end = __htmlText.length;
-		// 		__updateText(__htmlText);
-		// 	}
-		// }
-		// else
-		{
-			__updateText(value);
-		}
-		#else
 		__updateText(value);
-		#end
 
 		return value;
 	}
@@ -3353,24 +3300,8 @@ class TextField extends InteractiveObject
 					__selectionIndex = __getOppositeIdentifierBound(__specialSelectionInitialIndex, __lineSelection);
 				}
 
-				var setDirty = true;
-
-				#if (js && html5)
-				if (DisplayObject.__supportDOM)
-				{
-					if (__renderedOnCanvasWhileOnDOM)
-					{
-						__forceCachedBitmapUpdate = true;
-					}
-					setDirty = false;
-				}
-				#end
-
-				if (setDirty)
-				{
-					__dirty = true;
-					__setRenderDirty();
-				}
+				__dirty = true;
+				__setRenderDirty();
 			}
 		}
 	}
@@ -3417,13 +3348,6 @@ class TextField extends InteractiveObject
 
 				__stopCursorTimer();
 				__startCursorTimer();
-
-				#if (js && html5)
-				if (DisplayObject.__supportDOM && __renderedOnCanvasWhileOnDOM)
-				{
-					__forceCachedBitmapUpdate = true;
-				}
-				#end
 			}
 		}
 	}
@@ -3514,11 +3438,8 @@ class TextField extends InteractiveObject
 		// If we start word selection only when the mouse moves, we can't fully select the first word on a double click
 		// and there would be a delay before the first word is selected
 
-		if (!DisplayObject.__supportDOM)
-		{
-			__dirty = true;
-			__setRenderDirty();
-		}
+		__dirty = true;
+		__setRenderDirty();
 
 		// stage could be null if the TextField was removed from stage in an
 		// earlier listener

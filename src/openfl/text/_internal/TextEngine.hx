@@ -46,7 +46,6 @@ class TextEngine
 	private static var __defaultFonts:Map<String, DefaultFontSet>;
 	#if (js && html5)
 	private static var __context:CanvasRenderingContext2D;
-	private static var __div:Element;
 	#end
 
 	public var antiAliasType:AntiAliasType;
@@ -155,18 +154,6 @@ class TextEngine
 		{
 			__context = (cast Browser.document.createElement("canvas") : CanvasElement).getContext("2d");
 		}
-
-		#if (js && html5 && openfl_measuretext_div)
-		if (__div == null)
-		{
-			__div = cast Browser.document.createElement("div");
-			__div.style.setProperty("pointer-events", "none", null);
-			__div.style.setProperty("white-space", "nowrap", null);
-			__div.style.position = "absolute";
-			__div.style.top = "110%"; // position off-screen!
-			Browser.document.body.appendChild(__div);
-		}
-		#end
 		#end
 	}
 
@@ -500,9 +487,6 @@ class TextEngine
 		#if (js && html5)
 		var font = getFont(format);
 		__context.font = font;
-		#if openfl_measuretext_div
-		__div.style.setProperty("font", font, null);
-		#end
 		#end
 
 		var font = getFontInstance(format);
@@ -1135,9 +1119,6 @@ class TextEngine
 				#if (js && html5)
 				var fontString = getFont(currentFormat);
 				__context.font = fontString;
-				#if openfl_measuretext_div
-				__div.style.setProperty("font", fontString, null);
-				#end
 				#end
 
 				font = getFontInstance(currentFormat);
@@ -1754,12 +1735,7 @@ class TextEngine
 	#if (js && html5)
 	private function measureText(text:String):Float
 	{
-		#if openfl_measuretext_div
-		__div.innerHTML = StringTools.replace(text, " ", "&nbsp;");
-		return __div.clientWidth;
-		#else
 		return __context.measureText(text).width;
-		#end
 	}
 	#end
 

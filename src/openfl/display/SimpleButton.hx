@@ -460,7 +460,7 @@ class SimpleButton extends InteractiveObject
 		}
 
 		#if (js && html5)
-		if (DisplayObject.__supportDOM && __previousStates == null)
+		if (__previousStates == null)
 		{
 			__previousStates = new Vector<DisplayObject>();
 		}
@@ -468,24 +468,6 @@ class SimpleButton extends InteractiveObject
 
 		if (value != __currentState)
 		{
-			#if (js && html5)
-			if (DisplayObject.__supportDOM)
-			{
-				if (__currentState != null)
-				{
-					__currentState.__setStageReference(null);
-					__previousStates.push(__currentState);
-				}
-
-				var index = __previousStates.indexOf(value);
-
-				if (index > -1)
-				{
-					__previousStates.splice(index, 1);
-				}
-			}
-			#end
-
 			if (value != null)
 			{
 				value.__renderParent = this;
