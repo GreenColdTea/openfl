@@ -786,10 +786,12 @@ class Sound extends EventDispatcher
 			#if (js && html5 && howlerjs)
 			return __buffer.src.duration() * 1000;
 			#else
-			if (__buffer.data != null)
+			var dataLength = __buffer.data != null ? __buffer.data.length : __buffer.dataLength;
+
+			if (dataLength > 0)
 			{
 				var bytesPerFrame = __buffer.channels * (__buffer.bitsPerSample / 8.0);
-				var totalFrames = __buffer.data.length / bytesPerFrame;
+				var totalFrames = dataLength / bytesPerFrame;
 
 				return (totalFrames / __buffer.sampleRate) * 1000.0;
 			}
