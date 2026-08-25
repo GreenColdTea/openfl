@@ -7,6 +7,7 @@ import openfl.display3D._internal.GLFramebuffer;
 import openfl.display3D._internal.GLTexture;
 import openfl.display._internal.SamplerState;
 import openfl.display3D.textures.CubeTexture;
+import openfl.display3D.textures.MultiBufferTexture;
 import openfl.display3D.textures.RectangleTexture;
 import openfl.display3D.textures.TextureBase;
 import openfl.display3D.textures.Texture;
@@ -32,7 +33,7 @@ import lime.graphics.opengl.GL;
 import lime.graphics.Image;
 import lime.graphics.ImageBuffer;
 import lime.graphics.RenderContext;
-import lime.graphics.WebGLRenderContext;
+import lime.graphics.WebGL2RenderContext;
 import lime.math.Rectangle as LimeRectangle;
 import lime.math.Vector2;
 #end
@@ -262,7 +263,7 @@ import lime.math.Vector2;
 	@:noCompletion private static var __glMemoryTotalAvailable:Int = -1;
 	@:noCompletion private static var __glTextureMaxAnisotropy:Int = -1;
 
-	@:noCompletion private var gl:#if lime WebGLRenderContext #else Dynamic #end;
+	@:noCompletion private var gl:#if lime WebGL2RenderContext #else Dynamic #end;
 	@:noCompletion private var __backBufferAntiAlias:Int;
 	@:noCompletion private var __backBufferTexture:RectangleTexture;
 	@:noCompletion private var __backBufferWantsBestResolution:Bool;
@@ -295,7 +296,14 @@ import lime.math.Vector2;
 		__stage3D = stage3D;
 
 		__context = stage.window.context;
-		gl = __context.webgl;
+
+		#if (js && html5)
+		gl = __context.webgl2;
+		#elseif desktop
+		gl = __context.gl;
+		#elseif mobile
+		gl = __context.gles3;
+		#end
 
 		if (__contextState == null) __contextState = new Context3DState();
 		__state = new Context3DState();
@@ -867,6 +875,24 @@ import lime.math.Vector2;
 	public function createRectangleTexture(width:Int, height:Int, format:Context3DTextureFormat, optimizeForRenderToTexture:Bool):RectangleTexture
 	{
 		return new RectangleTexture(this, width, height, format, optimizeForRenderToTexture);
+	}
+
+	/**
+		Creates a new MultiBufferTexture instance.
+
+		MultiBufferTexture allows you to submit your triangles into multiple textures "attachments"
+		during the RTT pass.
+		And you could change the fragment data of each attachment by targeting it's `gl_FragData[i]` in the shader.
+		Allowing you submit a triangle into different textures, and different results, yet keeping it all in the same submit batch.
+
+		@param width   The width of this texture.
+		@param height  The height of this texture.
+		@param formats The color format of each buffer in this texture.
+		@return A `MultiBufferTexture` instance.
+	**/
+	public function createMultiBufferTexture(width:Int, height:Int, formats:Array<Context3DTextureFormat>):MultiBufferTexture
+	{
+		return new MultiBufferTexture(this, width, height, formats);
 	}
 
 	/**
@@ -2554,6 +2580,12 @@ import lime.math.Vector2;
 				var cubeTexture:CubeTexture = cast __state.renderToTexture;
 				width = cubeTexture.__size;
 				height = cubeTexture.__size;
+			}
+			else if ((__state.renderToTexture is MultiBufferTexture))
+			{
+				var multiBufferTexture:MultiBufferTexture = cast __state.renderToTexture;
+				width = multiBufferTexture.__width;
+				height = multiBufferTexture.__height;
 			}
 
 			gl.viewport(0, 0, width, height);

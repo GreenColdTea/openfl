@@ -716,6 +716,8 @@ class Shader
 			extensions += "#extension GL_OES_standard_derivatives : enable\n";
 		}
 
+		//extensions += "#extension GL_EXT_draw_buffers : enable\n";
+
 		var precisionPart = "";
 		if (versionLine.indexOf("es") > -1 || versionLine == "" || versionLine == "#version 100\n")
 		{

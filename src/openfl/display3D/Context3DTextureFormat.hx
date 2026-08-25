@@ -41,6 +41,11 @@ import openfl.utils._internal.NullUtils;
 	**/
 	public var RGBA_HALF_FLOAT = 5;
 
+	/**
+		8 bit, single color (RED) channel format.
+	**/
+	public var R = 6;
+
 	@:from private static function fromString(value:String):Context3DTextureFormat
 	{
 		return switch (value)
