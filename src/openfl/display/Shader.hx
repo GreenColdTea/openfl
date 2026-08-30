@@ -442,6 +442,7 @@ class Shader
 	 * notably: `String.fromCharCode(0)` is `false` but `\W` is `true`.
 	 */
 	@:noCompletion private var __isEmptyLine = ~/^\W*$/;
+
 	@:noCompletion private function __logGLShaderInfo(isError:Bool, type:Int, infoLog:String, source:String):Void
 	{
 		var message = "";
@@ -450,8 +451,7 @@ class Shader
 		for (log in infoLog.split("\n"))
 		{
 			// ignore empty lines
-			if (__isEmptyLine.match(log))
-				continue;
+			if (__isEmptyLine.match(log)) continue;
 
 			// look for a line number
 			if (!__lineExtractor.match(log))
@@ -479,12 +479,12 @@ class Shader
 		}
 
 		// If we couldn't parse the logs, output the old, verbose format
-		if (failingLine != null)
-			message = '\nFailed to simplify log:"$failingLine"\n$infoLog\n$source';
+		if (failingLine != null) message = '\nFailed to simplify log:"$failingLine"\n$infoLog\n$source';
 
 		var typeName = (type == __context.gl.VERTEX_SHADER) ? "Vertex" : "Fragment";
 		if (isError) Log.error('Error compiling $typeName shader $message');
-		else Log.debug('Info compiling $typeName shader $message');
+		else
+			Log.debug('Info compiling $typeName shader $message');
 	}
 
 	@:noCompletion private function __createGLProgram(vertexSource:String, fragmentSource:String):GLProgram
@@ -637,7 +637,9 @@ class Shader
 			// Detect from context
 			#if (js && html5)
 			// WebGL 1.0 uses GLSL ES 1.00, WebGL 2.0 uses GLSL ES 3.00
-			var isWebGL2 = __context.__context.type == WEBGL && __context.__context.version != null && __context.__context.version.indexOf("2") == 0;
+			var isWebGL2 = __context.__context.type == WEBGL
+				&& __context.__context.version != null
+				&& __context.__context.version.indexOf("2") == 0;
 			versionLine = isWebGL2 ? "#version 300 es\n" : ""; // 100 is default for WebGL 1.0
 			#elseif lime_opengles
 			// OpenGL ES version is usually like "OpenGL ES 2.0" or "OpenGL ES 3.0"
@@ -716,21 +718,26 @@ class Shader
 			extensions += "#extension GL_OES_standard_derivatives : enable\n";
 		}
 
-		//extensions += "#extension GL_EXT_draw_buffers : enable\n";
+		if (OpenGLRenderer.__drawBuffersARB)
+		{
+			extensions += "#extension GL_ARB_draw_buffers : enable\n";
+		}
+		else if (OpenGLRenderer.__drawBuffersEXT == null)
+		{
+			extensions += "#extension GL_EXT_draw_buffers : enable\n";
+		}
 
 		var precisionPart = "";
 		if (versionLine.indexOf("es") > -1 || versionLine == "" || versionLine == "#version 100\n")
 		{
 			precisionPart = (precisionHint == FULL ? "#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
-						+ "precision highp float;\n"
-						+ "#else\n"
-						+ "precision mediump float;\n"
-						+ "#endif" : "precision lowp float;");
+				+ "precision highp float;\n"
+				+ "#else\n"
+				+ "precision mediump float;\n"
+				+ "#endif" : "precision lowp float;");
 		}
 
-		var prefix = versionLine
-			+ extensions
-			+ (precisionPart != "" ? "#ifdef GL_ES\n" + precisionPart + "\n#endif\n" : "");
+		var prefix = versionLine + extensions + (precisionPart != "" ? "#ifdef GL_ES\n" + precisionPart + "\n#endif\n" : "");
 
 		if (complexBlendsSupported)
 		{
@@ -831,7 +838,8 @@ class Shader
 		{
 			var gl = __context.gl;
 
-			if (gl == null) {
+			if (gl == null)
+			{
 				Log.error("WebGL context is not available for shader initialization");
 				return;
 			}
@@ -842,16 +850,13 @@ class Shader
 			var vertexPrefix = __buildSourcePrefix(false);
 			var fragmentPrefix = __buildSourcePrefix(true);
 
-			var usesGLSL300 = vertexPrefix.indexOf("#version 300 es") != -1
-				|| fragmentPrefix.indexOf("#version 300 es") != -1;
+			var usesGLSL300 = vertexPrefix.indexOf("#version 300 es") != -1 || fragmentPrefix.indexOf("#version 300 es") != -1;
 
 			if (usesGLSL300)
 			{
-				vertexSource = vertexSource.replace("attribute", "in")
-					.replace("varying", "out");
+				vertexSource = vertexSource.replace("attribute", "in").replace("varying", "out");
 
-				fragmentSource = fragmentSource.replace("varying", "in")
-					.replace("texture2D", "texture");
+				fragmentSource = fragmentSource.replace("varying", "in").replace("texture2D", "texture");
 
 				if (fragmentSource.indexOf("gl_FragColor") != -1)
 				{
@@ -873,18 +878,24 @@ class Shader
 			{
 				program = __context.createProgram(GLSL);
 
-				if (program != null) {
+				if (program != null)
+				{
 					var glProgram = __createGLProgram(vertex, fragment);
 
-					if (glProgram != null) {
+					if (glProgram != null)
+					{
 						program.__glProgram = glProgram;
 						__context.__programs.set(id, program);
-					} else {
+					}
+					else
+					{
 						program = null;
 						Log.error("Failed to create GL program for shader");
 						return;
 					}
-				} else {
+				}
+				else
+				{
 					Log.error("Failed to create Program3D for shader");
 					return;
 				}

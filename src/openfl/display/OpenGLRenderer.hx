@@ -59,6 +59,8 @@ class OpenGLRenderer extends DisplayObjectRenderer
 	@:noCompletion private static var __coherentBlendsSupported:Null<Bool>;
 	@:noCompletion private static var __sRGBWriteControlSupported:Null<Bool>;
 	@:noCompletion private static var __standardDerivativesSupported:Null<Bool>;
+	@:noCompletion private static var __drawBuffersARB:Null<Bool>;
+	@:noCompletion private static var __drawBuffersEXT:Null<Bool>;
 
 	@:noCompletion private static var __alphaValue:Array<Float> = [1];
 	@:noCompletion private static var __colorMultipliersValue:Array<Float> = [0, 0, 0, 0];
@@ -161,6 +163,14 @@ class OpenGLRenderer extends DisplayObjectRenderer
 			}
 		}
 
+		if (__drawBuffersARB == null)
+		{
+			__drawBuffersARB = exts.contains("ARB_draw_buffers");
+		}
+		if (__drawBuffersEXT == null)
+		{
+			__drawBuffersEXT = exts.contains("EXT_draw_buffers");
+		}
 		if (__blendMinMaxSupported == null)
 		{
 			__blendMinMaxSupported = exts.contains("EXT_blend_minmax");
@@ -556,19 +566,24 @@ class OpenGLRenderer extends DisplayObjectRenderer
 		__matrix[14] = 0;
 		__matrix[15] = 1;
 
-		if (pixelSnapping == ALWAYS ||
-			(pixelSnapping == AUTO && (__stage == null || __stage.quality == LOW || __stage.quality == MEDIUM)
-				&& __matrix[1] == 0 && __matrix[4] == 0
-				&& __matrix[0] < 1.001 && __matrix[0] > 0.999
-			)	&& __matrix[5] < 1.001 && __matrix[5] > 0.999
-		) {
+		if (pixelSnapping == ALWAYS
+			|| (pixelSnapping == AUTO
+				&& (__stage == null || __stage.quality == LOW || __stage.quality == MEDIUM)
+				&& __matrix[1] == 0
+				&& __matrix[4] == 0
+				&& __matrix[0] < 1.001
+				&& __matrix[0] > 0.999)
+			&& __matrix[5] < 1.001
+			&& __matrix[5] > 0.999)
+		{
 			__matrix[12] = Math.round(__matrix[12]);
 			__matrix[13] = Math.round(__matrix[13]);
 		}
 
 		__matrix.append(__flipped ? __projectionFlipped : __projection);
 
-		for (i in 0...16) __values[i] = __matrix[i];
+		for (i in 0...16)
+			__values[i] = __matrix[i];
 
 		return __values;
 	}
@@ -1121,8 +1136,10 @@ class OpenGLRenderer extends DisplayObjectRenderer
 
 		switch (value)
 		{
-			case ADD: __context3D.setBlendFactors(ONE, ONE);
-			case ALPHA: __context3D.setBlendFactors(SOURCE_ALPHA, ONE_MINUS_SOURCE_ALPHA);
+			case ADD:
+				__context3D.setBlendFactors(ONE, ONE);
+			case ALPHA:
+				__context3D.setBlendFactors(SOURCE_ALPHA, ONE_MINUS_SOURCE_ALPHA);
 			case DARKEN:
 				if (__blendMinMaxSupported)
 				{
@@ -1133,8 +1150,10 @@ class OpenGLRenderer extends DisplayObjectRenderer
 				{
 					__context3D.setBlendFactors(DESTINATION_COLOR, ONE_MINUS_SOURCE_ALPHA);
 				}
-			case ERASE: __context3D.setBlendFactors(ZERO, ONE_MINUS_SOURCE_ALPHA);
-			case INVERT: __context3D.setBlendFactorsSeparate(ONE_MINUS_DESTINATION_COLOR, ONE_MINUS_SOURCE_ALPHA, ZERO, ONE);
+			case ERASE:
+				__context3D.setBlendFactors(ZERO, ONE_MINUS_SOURCE_ALPHA);
+			case INVERT:
+				__context3D.setBlendFactorsSeparate(ONE_MINUS_DESTINATION_COLOR, ONE_MINUS_SOURCE_ALPHA, ZERO, ONE);
 			case LIGHTEN:
 				if (__blendMinMaxSupported)
 				{
@@ -1145,12 +1164,15 @@ class OpenGLRenderer extends DisplayObjectRenderer
 				{
 					__context3D.setBlendFactors(ONE, ONE);
 				}
-			case MULTIPLY: __context3D.setBlendFactors(DESTINATION_COLOR, ONE_MINUS_SOURCE_ALPHA);
-			case SCREEN: __context3D.setBlendFactors(ONE, ONE_MINUS_SOURCE_COLOR);
+			case MULTIPLY:
+				__context3D.setBlendFactors(DESTINATION_COLOR, ONE_MINUS_SOURCE_ALPHA);
+			case SCREEN:
+				__context3D.setBlendFactors(ONE, ONE_MINUS_SOURCE_COLOR);
 			case SUBTRACT:
 				__context3D.setBlendFactors(ONE, ONE);
 				__context3D.__setGLBlendEquation(0x800B); // GL_FUNC_REVERSE_SUBTRACT
-			default: __context3D.setBlendFactors(ONE, ONE_MINUS_SOURCE_ALPHA);
+			default:
+				__context3D.setBlendFactors(ONE, ONE_MINUS_SOURCE_ALPHA);
 		}
 	}
 

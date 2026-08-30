@@ -150,7 +150,7 @@ class TextLayout
 			{
 				__font = font;
 				// 	hb_font_destroy ((hb_font_t*)mHBFont);
-				@:privateAccess font.__setSize(size);
+				__font.setSize(size);
 				__hbFont = new HBFTFont(font);
 				__hbFontSize = size;
 
@@ -168,7 +168,7 @@ class TextLayout
 				// with different sizes, so the size may have been changed by
 				// another TextLayout since this method was last called. we can
 				// simply restore our size, though.
-				@:privateAccess font.__setSize(size);
+				font.setSize(size);
 			}
 
 			if (__hbBuffer == null)
